@@ -3,8 +3,9 @@ import os
 
 FILENAME = "inventory.json"
 
-def get_initial_products():
-    """Returns initial inventory represented as a list of dictionaries (Req 1)."""
+
+def get_default_items():
+    """Returns the default initial items required by Requirement 1."""
     return [
         {"id": "P001", "name": "Laptop", "price": 1200.00, "stock": 15},
         {"id": "P002", "name": "Mouse", "price": 25.50, "stock": 40},
@@ -12,8 +13,52 @@ def get_initial_products():
     ]
 
 
+def load_inventory():
+    """Loads inventory from inventory.json.
+
+    If missing or empty, populates it with default items.
+    """
+    default_items = get_default_items()
+
+    if os.path.exists(FILENAME):
+        try:
+            with open(FILENAME, "r") as file:
+                inventory = json.load(file)
+
+            # If the file exists but has no items in it [], reset with defaults
+            if not inventory:
+                print("inventory.json found but was empty.")
+                print("Populating initial items...")
+                save_inventory(default_items)
+                return default_items
+
+            print("inventory.json found.")
+            print("Inventory loaded successfully.")
+            return inventory
+        except Exception as e:
+            print(f"Error loading file: {e}")
+            save_inventory(default_items)
+            return default_items
+    else:
+        print(
+            "inventory.json not found. Initializing file with default items..."
+        )
+        save_inventory(default_items)
+        return default_items
+
+
+def save_inventory(inventory):
+    """Saves the inventory data to inventory.json."""
+    try:
+        with open(FILENAME, "w") as file:
+            json.dump(inventory, file, indent=4)
+        print("Inventory saved successfully to inventory.json.")
+    except Exception as e:
+        print(f"Error saving to file: {e}")
+
+
 def display_all(inventory):
-    """Displays all products formatted to match the output requirements (Req 2)."""
+    """Displays all products formatted to match the required layout."""
     print("\nCurrent Inventory")
     print("-" * 50)
     if not inventory:
@@ -27,7 +72,7 @@ def display_all(inventory):
 
 
 def add_product(inventory):
-    """Adds a new product to the inventory list (Req 2)."""
+    """Adds a new product to the inventory with auto-generated ID."""
     print("\nAdd New Product")
 
     if inventory:
@@ -53,7 +98,7 @@ def add_product(inventory):
 
 
 def update_stock(inventory):
-    """Updates stock quantity for an existing product (Req 2)."""
+    """Updates stock quantity for an existing product by ID."""
     print("\nUpdate Stock")
     prod_id = input("Enter Product ID: ").strip()
 
@@ -75,7 +120,7 @@ def update_stock(inventory):
 
 
 def search_product(inventory):
-    """Searches and displays product details by ID (Req 2)."""
+    """Searches and displays product details by ID."""
     print("\nSearch Product")
     prod_id = input("Enter Product ID: ").strip()
 
@@ -93,41 +138,48 @@ def search_product(inventory):
     print("\nProduct not found.")
 
 
+def display_menu():
+    """Displays the main menu options."""
+    print("\n" + "=" * 32)
+    print("INVENTORY MANAGEMENT SYSTEM")
+    print("=" * 32)
+    print("\n---------- MENU ----------")
+    print("1. Display All Products")
+    print("2. Add Product")
+    print("3. Update Stock")
+    print("4. Search Product")
+    print("5. Save Inventory")
+    print("6. Exit")
+    print("--------------------------")
 
-def load_inventory():
-    """Checks whether inventory.json exists and loads data.
 
-    Initializes with default items if missing or empty (Req 3).
-    """
-    default_items = get_initial_products()
-
-    if os.path.exists(FILENAME):
-        try:
-            with open(FILENAME, "r") as file:
-                inventory = json.load(file)
-
-            if not inventory:
-                print(
-                    "inventory.json found but was empty. Loading default items..."
-                )
-                return default_items
-
-            print("inventory.json found.")
-            print("Inventory loaded successfully.")
-            return inventory
-        except Exception as e:
-            print(f"Error loading file: {e}")
-            return default_items
-    else:
-        print(
-            "inventory.json not found. Initializing with sample products..."
-        )
-        return default_items
-
-if __name__ == "__main__":
-    print("--- TESTING PHASE A + B ---")
-    # Test load_inventory()
+def main():
     inventory = load_inventory()
 
-    # Test display_all()
-    display_all(inventory)
+    while True:
+        display_menu()
+        option = input("\nEnter option: ").strip()
+
+        if option == "1":
+            display_all(inventory)
+        elif option == "2":
+            add_product(inventory)
+        elif option == "3":
+            update_stock(inventory)
+        elif option == "4":
+            search_product(inventory)
+        elif option == "5":
+            print("\nSaving inventory...")
+            save_inventory(inventory)
+        elif option == "6":
+            print("\nSaving inventory before exit...")
+            save_inventory(inventory)
+            print("\nThank you for using Inventory Management System.")
+            print("Program terminated.")
+            break
+        else:
+            print("Invalid option. Please enter a number between 1 and 6.")
+
+
+if __name__ == "__main__":
+    main()
